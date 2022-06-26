@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class CityModel {
+export class TripModel {
     @ApiProperty({ type: String })
     _id: string;
 

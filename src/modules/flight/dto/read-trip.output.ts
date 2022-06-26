@@ -1,9 +1,9 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-import { CityModel } from "../model/trip.model";
+import { TripModel } from "../model/trip.model";
 
-export class ReadCityOutput {
-    @ApiResponseProperty({ type: [CityModel] })
-    data: CityModel[];
+export class ReadTripOutput {
+    @ApiResponseProperty({ type: [TripModel] })
+    data: TripModel[];
 
     @ApiResponseProperty()
     count: number;

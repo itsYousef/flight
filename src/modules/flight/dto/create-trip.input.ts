@@ -1,21 +1,41 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsNotEmpty, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsDateString, IsNotEmpty, IsString, ValidateNested } from "class-validator";
 
-export class CreateCityData {
+export class LegInputData {
+    @ApiProperty({ type: Date })
+    @IsDateString()
+    startDate: string;
+
+    @ApiProperty({ type: Date })
+    @IsDateString()
+    endDate: string;
+
     @ApiProperty()
     @IsString()
-    name: string;
+    departureId: string;      // ObjectId (Location)
 
     @ApiProperty()
     @IsString()
-    countryId: string;
+    destinationId: string;    // ObjectId (Location)
+
+    @ApiProperty()
+    @IsString()
+    aircraftId: string;       // ObjectId (Aircraft)
 }
 
-export class CreateCityInput {
-    @Type(() => CreateCityData)
+export class CreateTripData {
+    @ApiProperty({ type: [LegInputData] })
+    @IsArray()
+    @ValidateNested()
+    @Type(() => LegInputData)
+    legs: [LegInputData];
+}
+
+export class CreateTripInput {
+    @Type(() => CreateTripData)
     @ApiProperty()
     @IsNotEmpty()
     @ValidateNested()
-    data: CreateCityData;
+    data: CreateTripData;
 }
