@@ -1,0 +1,13 @@
+module.exports = {
+    moduleFileExtensions: ["js", "json", "ts"],
+    rootDir: ".",
+    modulePaths: ["<rootDir>"],
+    testRegex: ".e2e-spec.ts$",
+    transform: {
+        "^.+\\.(t|j)s$": "ts-jest",
+    },
+    coverageDirectory: "./coverage",
+    testEnvironment: "node",
+    setupFilesAfterEnv: ['./jest.setup.js']
+};
+

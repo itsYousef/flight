@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "rootDir": "./",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "./src/**/*",
+    "./schemas/*",
+    "./test/**/*",
+    "jest.config.js"
+  ],
+  "exclude": [
+    "./node_modules/**/*"
+  ]
+}
