@@ -1,33 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { MongoClient } from 'mongodb';
 import { Model } from 'mongoose';
-import { City, CityDocument } from 'schemas/city.schema';
-import { Country, CountryDocument } from 'schemas/country.schema';
-import { Region, RegionDocument } from 'schemas/region.schema';
+import { Aircraft, AircraftDocument } from 'schemas/aircraft.schema';
+import { Leg, LegDocument } from 'schemas/leg.schema';
+import { Location, LocationDocument } from 'schemas/location.schema';
+import { Trip, TripDocument } from 'schemas/trip.schema';
+
 
 @Injectable()
 export class MongoService {
     constructor(
-        @InjectModel(Region.name) private regionM: Model<RegionDocument>,
-        @InjectModel(Country.name) private countryM: Model<CountryDocument>,
-        @InjectModel(City.name) private cityM: Model<CityDocument>
+        @InjectModel(Trip.name) private tripM: Model<TripDocument>,
+        @InjectModel(Leg.name) private legM: Model<LegDocument>,
+        @InjectModel(Aircraft.name) private aircraftM: Model<AircraftDocument>,
+        @InjectModel(Location.name) private locationM: Model<LocationDocument>
     ) { }
 
-    get regionModel() {
-        return this.regionM;
+    get tripModel() {
+        return this.tripM;
     }
 
-    get countryModel() {
-        return this.countryM;
+    get legModel() {
+        return this.legM;
     }
 
-    get cityModel() {
-        return this.cityM;
+    get aircraftModel() {
+        return this.aircraftM;
     }
 
-    async getDb() {
-        const client = await MongoClient.connect(process.env.DB_CONNECTION);
-        return client.db();
+    get locationModel() {
+        return this.locationM;
     }
 }
