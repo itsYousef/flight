@@ -14,7 +14,8 @@ async function bootstrap() {
   setupGlobalValidation(app)
   setupSwagger(app)
   setupCors(app);
-  await app.listen(8000);
+  // seeder(5);
+  await app.listen(9000);
 }
 
 function setupSwagger(app: INestApplication) {
