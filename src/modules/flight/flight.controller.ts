@@ -1,5 +1,8 @@
-import { Controller } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CreateTripInput } from './dto/create-trip.input';
 import { FlightService } from './flight.service';
+import { TripModel } from './model/trip.model';
 
 @Controller('flight')
 export class FlightController {
@@ -7,48 +10,48 @@ export class FlightController {
     private flightService: FlightService
   ) { }
 
-  // @Post("createFlight")
-  // @ApiOperation({ operationId: "createFlight" })
-  // @ApiBody({ type: CreateFlightInput })
-  // @ApiResponse({ status: 200, type: FlightModel })
-  // createFlight(@Body() input: CreateFlightInput) {
-  //   console.log("CreateFlight API...");
-  //   return this.flightService.createFlight(input);
+  @Post("createTrip")
+  @ApiOperation({ operationId: "createTrip" })
+  @ApiBody({ type: CreateTripInput })
+  @ApiResponse({ status: 200, type: TripModel })
+  createTrip(@Body() input: CreateTripInput) {
+    console.log("CreateTrip API...");
+    return this.flightService.createTrip(input);
+  }
+
+  // @Post("readTrip")
+  // @ApiOperation({ operationId: "readTrip" })
+  // @ApiBody({ type: ReadTripInput })
+  // @ApiResponse({ status: 200, type: ReadTripOutput })
+  // readTrip(@Body() input: ReadTripInput) {
+  //   console.log("ReadTrip API...");
+  //   return this.flightService.readTrip(input);
   // }
 
-  // @Post("readFlight")
-  // @ApiOperation({ operationId: "readFlight" })
-  // @ApiBody({ type: ReadFlightInput })
-  // @ApiResponse({ status: 200, type: ReadFlightOutput })
-  // readFlight(@Body() input: ReadFlightInput) {
-  //   console.log("ReadFlight API...");
-  //   return this.flightService.readFlight(input);
+  // @Post("readTripCities")
+  // @ApiOperation({ operationId: "readTripCities" })
+  // @ApiBody({ type: ReadTripCitiesInput })
+  // @ApiResponse({ status: 200, type: ReadTripCitiesOutput })
+  // readTripCities(@Body() input: ReadTripCitiesInput) {
+  //   console.log("ReadTripCities API...");
+  //   return this.flightService.readTripCities(input);
   // }
 
-  // @Post("readFlightCities")
-  // @ApiOperation({ operationId: "readFlightCities" })
-  // @ApiBody({ type: ReadFlightCitiesInput })
-  // @ApiResponse({ status: 200, type: ReadFlightCitiesOutput })
-  // readFlightCities(@Body() input: ReadFlightCitiesInput) {
-  //   console.log("ReadFlightCities API...");
-  //   return this.flightService.readFlightCities(input);
+  // @Post("updateTrip")
+  // @ApiOperation({ operationId: "updateTrip" })
+  // @ApiBody({ type: UpdateTripInput })
+  // @ApiResponse({ status: 200, type: TripModel })
+  // updateTrip(@Body() input: UpdateTripInput) {
+  //   console.log("UpdateTrip API...");
+  //   return this.flightService.updateTrip(input);
   // }
 
-  // @Post("updateFlight")
-  // @ApiOperation({ operationId: "updateFlight" })
-  // @ApiBody({ type: UpdateFlightInput })
-  // @ApiResponse({ status: 200, type: FlightModel })
-  // updateFlight(@Body() input: UpdateFlightInput) {
-  //   console.log("UpdateFlight API...");
-  //   return this.flightService.updateFlight(input);
-  // }
-
-  // @Post("deleteFlight")
-  // @ApiOperation({ operationId: "deleteFlight" })
-  // @ApiBody({ type: DeleteFlightInput })
-  // @ApiResponse({ status: 200, type: FlightModel })
-  // deleteFlight(@Body() input: DeleteFlightInput) {
-  //   console.log("DeleteFlight API...");
-  //   return this.flightService.deleteFlight(input);
+  // @Post("deleteTrip")
+  // @ApiOperation({ operationId: "deleteTrip" })
+  // @ApiBody({ type: DeleteTripInput })
+  // @ApiResponse({ status: 200, type: TripModel })
+  // deleteTrip(@Body() input: DeleteTripInput) {
+  //   console.log("DeleteTrip API...");
+  //   return this.flightService.deleteTrip(input);
   // }
 }

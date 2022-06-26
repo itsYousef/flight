@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MongoService } from '../mongo/mongo.service';
+import { CreateTripInput } from './dto/create-trip.input';
 
 @Injectable()
 export class FlightService {
@@ -7,13 +8,27 @@ export class FlightService {
     private mongo: MongoService
   ) { }
 
-  // async createRegion({ data }: CreateRegionInput) {
-  //   const { name } = data;
+  async createTrip({ data }: CreateTripInput) {
+    const { legs } = data;
 
-  //   return this.mongo.regionModel.create({
-  //     name
-  //   });
-  // }
+    const createdTrip = await this.mongo.tripModel.create({});
+
+    //todo: validate legs startDate and endDate (end > start , nextStart > end)
+    //todo: validate legs location (dep != des, dep == prev.des)
+    for (let leg of legs) {
+      const { aircraftId, departureId, destinationId, endDate, startDate } = leg;
+
+      //todo: validate aircraftId, departureId, destinationId
+      await this.mongo.legModel.create({
+        tripId: createdTrip.id,
+        aircraftId,
+        startDate,
+        endDate,
+        departureId,
+        destinationId
+      });
+    }
+  }
 
   // async readRegion(input: ReadRegionInput): Promise<ReadRegionOutput> {
   //   const { where } = input;
