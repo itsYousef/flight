@@ -5,11 +5,11 @@ import { IsArray, IsDateString, IsNotEmpty, IsString, ValidateNested } from "cla
 export class LegCreateInputData {
     @ApiProperty({ type: Date })
     @IsDateString()
-    startDate: string;
+    startDate: Date;
 
     @ApiProperty({ type: Date })
     @IsDateString()
-    endDate: string;
+    endDate: Date;
 
     @ApiProperty()
     @IsString()

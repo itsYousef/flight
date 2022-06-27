@@ -11,12 +11,12 @@ export class LegUpdateInputData {
     @ApiPropertyOptional({ type: Date })
     @IsOptional()
     @IsDateString()
-    startDate?: string;
+    startDate?: Date;
 
     @ApiPropertyOptional({ type: Date })
     @IsOptional()
     @IsDateString()
-    endDate?: string;
+    endDate?: Date;
 
     @ApiPropertyOptional()
     @IsOptional()

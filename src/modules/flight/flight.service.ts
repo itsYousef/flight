@@ -1,28 +1,67 @@
 import { Injectable } from '@nestjs/common';
 import { MongoService } from '../mongo/mongo.service';
 import { CreateTripInput } from './dto/create-trip.input';
+import { DeleteTripInput } from './dto/delete-trip.input';
 import { ReadTripInput } from './dto/read-trip.input';
 import { ReadTripOutput } from './dto/read-trip.output';
 import { UpdateTripInput } from './dto/update-trip.input';
 import { TripModel } from './model/trip.model';
 
+type LegData = {
+  startDate?: Date;
+  endDate?: Date;
+  departureId?: string;
+  destinationId?: string;
+  aircraftId?: string;
+}
 @Injectable()
 export class FlightService {
   constructor(
     private mongo: MongoService
   ) { }
 
+  validateData(legs: LegData[]) {
+    let prevEndDate = null;
+    let prevDestination = null;
+
+    for (const leg of legs) {
+      if (leg.endDate <= leg.startDate)
+        throw Error("endDate must be larger than startDate.");
+
+      if (prevEndDate && (leg.startDate <= prevEndDate))
+        throw Error("startDate must be larger than previous endDate.");
+
+      if (prevDestination && (leg.departureId != prevDestination))
+        throw Error("departure must be same as last leg destination.");
+
+      if (leg.departureId == leg.destinationId)
+        throw Error("departure and destination cannot be same.");
+
+
+      prevDestination = leg.destinationId;
+      prevEndDate = leg.endDate;
+    }
+  }
+
+  async validateFk(model: any, id: string) {
+    const docExists = await model.exists({ _id: id });
+    return docExists ? true : false;
+  }
+
   async createTrip({ data }: CreateTripInput) {
     const { legs } = data;
 
     const createdTrip = await this.mongo.tripModel.create({});
 
-    //todo: validate legs startDate and endDate (end > start , nextStart > end)
-    //todo: validate legs location (dep != des, dep == prev.des)
+    this.validateData(legs);
+
     for (let leg of legs) {
       const { aircraftId, departureId, destinationId, endDate, startDate } = leg;
 
-      //todo: validate aircraftId, departureId, destinationId
+      await this.validateFk(this.mongo.aircraftModel, aircraftId);
+      await this.validateFk(this.mongo.locationModel, departureId);
+      await this.validateFk(this.mongo.locationModel, destinationId);
+
       await this.mongo.legModel.create({
         tripId: createdTrip.id,
         aircraftId,
@@ -78,6 +117,8 @@ export class FlightService {
 
     await this.mongo.legModel.deleteMany({ tripId: id });
 
+    this.validateData(legs);
+
     const createdLegs = await this.mongo.legModel.create(
       legs.map((leg) => {
         let res: any = {
@@ -98,7 +139,11 @@ export class FlightService {
     return result;
   }
 
-  // async deleteTrip(input: DeleteTripInput) {
-  //   return this.mongo.regionModel.findByIdAndDelete(input.id);
-  // }
+  async deleteTrip({ id }: DeleteTripInput) {
+    const result = await this.mongo.tripModel.findByIdAndDelete(id);
+
+    await this.mongo.legModel.deleteMany({ tripId: id });
+
+    return result;
+  }
 }
