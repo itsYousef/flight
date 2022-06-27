@@ -9,6 +9,8 @@ export type LegDocument = Leg & mongoose.Document;
 
 @Schema({ strict: false })
 export class Leg {
+  _id: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Trip' })
   tripId: Trip;
 

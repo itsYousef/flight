@@ -6,6 +6,8 @@ export type AircraftDocument = Aircraft & mongoose.Document;
 
 @Schema({ strict: false })
 export class Aircraft {
+  _id: string;
+
   @Prop()
   name: string;
 }

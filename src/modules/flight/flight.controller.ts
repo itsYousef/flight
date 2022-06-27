@@ -1,6 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateTripInput } from './dto/create-trip.input';
+import { ReadTripInput } from './dto/read-trip.input';
+import { ReadTripOutput } from './dto/read-trip.output';
 import { FlightService } from './flight.service';
 import { TripModel } from './model/trip.model';
 
@@ -19,14 +21,14 @@ export class FlightController {
     return this.flightService.createTrip(input);
   }
 
-  // @Post("readTrip")
-  // @ApiOperation({ operationId: "readTrip" })
-  // @ApiBody({ type: ReadTripInput })
-  // @ApiResponse({ status: 200, type: ReadTripOutput })
-  // readTrip(@Body() input: ReadTripInput) {
-  //   console.log("ReadTrip API...");
-  //   return this.flightService.readTrip(input);
-  // }
+  @Post("readTrip")
+  @ApiOperation({ operationId: "readTrip" })
+  @ApiBody({ type: ReadTripInput })
+  @ApiResponse({ status: 200, type: ReadTripOutput })
+  readTrip(@Body() input: ReadTripInput) {
+    console.log("ReadTrip API...");
+    return this.flightService.readTrip(input);
+  }
 
   // @Post("readTripCities")
   // @ApiOperation({ operationId: "readTripCities" })

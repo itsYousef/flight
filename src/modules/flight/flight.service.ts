@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { MongoService } from '../mongo/mongo.service';
 import { CreateTripInput } from './dto/create-trip.input';
+import { ReadTripInput } from './dto/read-trip.input';
+import { ReadTripOutput } from './dto/read-trip.output';
+import { TripModel } from './model/trip.model';
 
 @Injectable()
 export class FlightService {
@@ -30,33 +33,42 @@ export class FlightService {
     }
   }
 
-  // async readRegion(input: ReadRegionInput): Promise<ReadRegionOutput> {
-  //   const { where } = input;
+  async readTrip(input: ReadTripInput): Promise<ReadTripOutput> {
+    const { where } = input;
 
-  //   const whereCond: FilterQuery<RegionDocument> = {
-  //     _id: where?.id,
-  //     name: {
-  //       $regex: where?.name
-  //     }
-  //   }
+    // todo: validate id first
+    let foundedTrip = await this.mongo.tripModel.findById(where.id);
 
-  //   let whereCondCleaned = cleanDeep(whereCond);
+    let legs = await this.mongo.legModel.find({
+      tripId: where.id
+    }).populate(["departureId", "destinationId", "aircraftId"]);
 
-  //   let options = cleanDeep({
-  //     skip: input.pagination?.skip,
-  //     limit: input.pagination?.take,
-  //     sort: {
-  //       [input.sortBy?.field]: input.sortBy?.descending ? -1 : 1
-  //     }
-  //   })
 
-  //   let count = await this.mongo.regionModel.countDocuments(whereCondCleaned);
-  //   let data = await this.mongo.regionModel.find(whereCondCleaned, null, options);
+    const result: TripModel = {
+      _id: foundedTrip.id,
+      tripNo: foundedTrip.tripNo,
+      legs: legs.map((leg) => ({
+        _id: leg.id,
+        aircraft: {
+          _id: leg.aircraftId._id,
+          name: leg.aircraftId.name
+        },
+        departure: {
+          _id: leg.departureId._id,
+          name: leg.departureId.name
+        },
+        destination: {
+          _id: leg.destinationId._id,
+          name: leg.destinationId.name
+        },
+        endDate: leg.endDate,
+        startDate: leg.startDate
+      }))
+    }
+    return { count: 1, data: [result] };
+  }
 
-  //   return { count, data };
-  // }
-
-  // async readRegionCities(input: ReadRegionCitiesInput): Promise<ReadRegionCitiesOutput> {
+  // async readTripCities(input: ReadTripCitiesInput): Promise<ReadTripCitiesOutput> {
   //   const { where } = input;
 
   //   const region = await this.mongo.regionModel.findOne({
@@ -86,7 +98,7 @@ export class FlightService {
   //   return { count: cities.count, data: cities.data };
   // }
 
-  // async updateRegion({ data, id }: UpdateRegionInput) {
+  // async updateTrip({ data, id }: UpdateTripInput) {
   //   const { name } = data;
   //   const input = cleanDeep({
   //     name
@@ -95,7 +107,7 @@ export class FlightService {
   //   return this.mongo.regionModel.findByIdAndUpdate(id, input);
   // }
 
-  // async deleteRegion(input: DeleteRegionInput) {
+  // async deleteTrip(input: DeleteTripInput) {
   //   return this.mongo.regionModel.findByIdAndDelete(input.id);
   // }
 }

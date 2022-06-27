@@ -1,13 +1,9 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-import { LegModel } from "./leg.model";
 
-export class TripModel {
+export class LocationModel {
     @ApiResponseProperty({ type: String })
     _id: string;
 
     @ApiResponseProperty({ type: String })
-    tripNo: string;
-
-    @ApiResponseProperty({ type: [LegModel] })
-    legs: LegModel[];
+    name: string;
 }

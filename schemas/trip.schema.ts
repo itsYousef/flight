@@ -10,6 +10,8 @@ function tripNoGenerator() {
 }
 @Schema({ strict: false })
 export class Trip {
+  _id: string;
+
   @Prop({ default: tripNoGenerator })
   tripNo: string;
 }
