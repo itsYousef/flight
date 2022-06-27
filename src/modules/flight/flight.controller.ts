@@ -3,6 +3,7 @@ import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateTripInput } from './dto/create-trip.input';
 import { ReadTripInput } from './dto/read-trip.input';
 import { ReadTripOutput } from './dto/read-trip.output';
+import { UpdateTripInput } from './dto/update-trip.input';
 import { FlightService } from './flight.service';
 import { TripModel } from './model/trip.model';
 
@@ -30,23 +31,14 @@ export class FlightController {
     return this.flightService.readTrip(input);
   }
 
-  // @Post("readTripCities")
-  // @ApiOperation({ operationId: "readTripCities" })
-  // @ApiBody({ type: ReadTripCitiesInput })
-  // @ApiResponse({ status: 200, type: ReadTripCitiesOutput })
-  // readTripCities(@Body() input: ReadTripCitiesInput) {
-  //   console.log("ReadTripCities API...");
-  //   return this.flightService.readTripCities(input);
-  // }
-
-  // @Post("updateTrip")
-  // @ApiOperation({ operationId: "updateTrip" })
-  // @ApiBody({ type: UpdateTripInput })
-  // @ApiResponse({ status: 200, type: TripModel })
-  // updateTrip(@Body() input: UpdateTripInput) {
-  //   console.log("UpdateTrip API...");
-  //   return this.flightService.updateTrip(input);
-  // }
+  @Post("updateTrip")
+  @ApiOperation({ operationId: "updateTrip" })
+  @ApiBody({ type: UpdateTripInput })
+  @ApiResponse({ status: 200, type: TripModel })
+  updateTrip(@Body() input: UpdateTripInput) {
+    console.log("UpdateTrip API...");
+    return this.flightService.updateTrip(input);
+  }
 
   // @Post("deleteTrip")
   // @ApiOperation({ operationId: "deleteTrip" })

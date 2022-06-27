@@ -1,29 +1,56 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsDateString, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
 
-
-export class UpdateCityData {
+export class LegUpdateInputData {
     @ApiPropertyOptional()
     @IsOptional()
     @IsString()
-    name?: string;
+    id?: string;
+
+    @ApiPropertyOptional({ type: Date })
+    @IsOptional()
+    @IsDateString()
+    startDate?: string;
+
+    @ApiPropertyOptional({ type: Date })
+    @IsOptional()
+    @IsDateString()
+    endDate?: string;
 
     @ApiPropertyOptional()
     @IsOptional()
     @IsString()
-    countryId?: string;
+    departureId?: string;      // ObjectId (Location)
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    destinationId?: string;    // ObjectId (Location)
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    aircraftId?: string;       // ObjectId (Aircraft)
+}
+
+export class UpdateTripData {
+    @ApiProperty({ type: [LegUpdateInputData] })
+    @IsArray()
+    @ValidateNested()
+    @Type(() => LegUpdateInputData)
+    legs: [LegUpdateInputData];
 }
 
 
-export class UpdateCityInput {
+export class UpdateTripInput {
     @ApiProperty()
     @IsString()
     id: string;
 
-    @Type(() => UpdateCityData)
+    @Type(() => UpdateTripData)
     @ApiProperty()
     @IsNotEmpty()
     @ValidateNested()
-    data: UpdateCityData;
+    data: UpdateTripData;
 }

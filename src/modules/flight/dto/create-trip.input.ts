@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsDateString, IsNotEmpty, IsString, ValidateNested } from "class-validator";
 
-export class LegInputData {
+export class LegCreateInputData {
     @ApiProperty({ type: Date })
     @IsDateString()
     startDate: string;
@@ -25,11 +25,11 @@ export class LegInputData {
 }
 
 export class CreateTripData {
-    @ApiProperty({ type: [LegInputData] })
+    @ApiProperty({ type: [LegCreateInputData] })
     @IsArray()
     @ValidateNested()
-    @Type(() => LegInputData)
-    legs: [LegInputData];
+    @Type(() => LegCreateInputData)
+    legs: [LegCreateInputData];
 }
 
 export class CreateTripInput {

@@ -3,6 +3,7 @@ import { MongoService } from '../mongo/mongo.service';
 import { CreateTripInput } from './dto/create-trip.input';
 import { ReadTripInput } from './dto/read-trip.input';
 import { ReadTripOutput } from './dto/read-trip.output';
+import { UpdateTripInput } from './dto/update-trip.input';
 import { TripModel } from './model/trip.model';
 
 @Injectable()
@@ -31,6 +32,10 @@ export class FlightService {
         destinationId
       });
     }
+
+    const result = (await this.readTrip({ where: { id: createdTrip.id } })).data[0];
+
+    return result;
   }
 
   async readTrip(input: ReadTripInput): Promise<ReadTripOutput> {
@@ -68,44 +73,30 @@ export class FlightService {
     return { count: 1, data: [result] };
   }
 
-  // async readTripCities(input: ReadTripCitiesInput): Promise<ReadTripCitiesOutput> {
-  //   const { where } = input;
+  async updateTrip({ data, id }: UpdateTripInput) {
+    const { legs } = data;
 
-  //   const region = await this.mongo.regionModel.findOne({
-  //     name: where.name
-  //   });
+    await this.mongo.legModel.deleteMany({ tripId: id });
 
-  //   const readCountryInp: ReadCountryInput = {
-  //     where: {
-  //       regionId: region.id
-  //     }
-  //   }
-  //   const countries: ReadCountryOutput = await lastValueFrom(this.kafkaClient.send('readCountry', { ...readCountryInp }));
+    const createdLegs = await this.mongo.legModel.create(
+      legs.map((leg) => {
+        let res: any = {
+          tripId: id,
+          aircraftId: leg.aircraftId,
+          startDate: leg.startDate,
+          endDate: leg.endDate,
+          departureId: leg.departureId,
+          destinationId: leg.destinationId
+        }
+        if (leg.id)
+          res._id = leg.id;
+        return res;
+      }));
 
-  //   const countryIds: string[] = [];
-  //   for (let country of countries.data) {
-  //     countryIds.push(country._id);
-  //   }
+    const result = (await this.readTrip({ where: { id } })).data[0];
 
-  //   const readCityInp: ReadCityInput = {
-  //     where: {
-  //       countryId: countryIds,
-  //       nameSort: where.cityNameSort
-  //     }
-  //   }
-  //   const cities: ReadCityOutput = await lastValueFrom(this.kafkaClient.send('readCity', { ...readCityInp }));
-
-  //   return { count: cities.count, data: cities.data };
-  // }
-
-  // async updateTrip({ data, id }: UpdateTripInput) {
-  //   const { name } = data;
-  //   const input = cleanDeep({
-  //     name
-  //   })
-
-  //   return this.mongo.regionModel.findByIdAndUpdate(id, input);
-  // }
+    return result;
+  }
 
   // async deleteTrip(input: DeleteTripInput) {
   //   return this.mongo.regionModel.findByIdAndDelete(input.id);
