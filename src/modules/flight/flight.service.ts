@@ -45,23 +45,24 @@ export class FlightService {
 
   async validateFk(model: any, id: string) {
     const docExists = await model.exists({ _id: id });
-    return docExists ? true : false;
+    if (!docExists)
+      throw Error(`id "${id}" does not exist in DB.`);
   }
 
   async createTrip({ data }: CreateTripInput) {
     const { legs } = data;
 
-    const createdTrip = await this.mongo.tripModel.create({});
-
     this.validateData(legs);
+    for (const leg of legs) {
+      await this.validateFk(this.mongo.aircraftModel, leg.aircraftId);
+      await this.validateFk(this.mongo.locationModel, leg.departureId);
+      await this.validateFk(this.mongo.locationModel, leg.destinationId);
+    }
+
+    const createdTrip = await this.mongo.tripModel.create({});
 
     for (let leg of legs) {
       const { aircraftId, departureId, destinationId, endDate, startDate } = leg;
-
-      await this.validateFk(this.mongo.aircraftModel, aircraftId);
-      await this.validateFk(this.mongo.locationModel, departureId);
-      await this.validateFk(this.mongo.locationModel, destinationId);
-
       await this.mongo.legModel.create({
         tripId: createdTrip.id,
         aircraftId,
@@ -80,8 +81,9 @@ export class FlightService {
   async readTrip(input: ReadTripInput): Promise<ReadTripOutput> {
     const { where } = input;
 
-    // todo: validate id first
     let foundedTrip = await this.mongo.tripModel.findById(where.id);
+
+    if (!foundedTrip) return { count: 0, data: [] };
 
     let legs = await this.mongo.legModel.find({
       tripId: where.id
@@ -115,12 +117,17 @@ export class FlightService {
   async updateTrip({ data, id }: UpdateTripInput) {
     const { legs } = data;
 
+    this.validateData(legs);
+    for (const leg of legs) {
+      await this.validateFk(this.mongo.aircraftModel, leg.aircraftId);
+      await this.validateFk(this.mongo.locationModel, leg.departureId);
+      await this.validateFk(this.mongo.locationModel, leg.destinationId);
+    }
+
     await this.mongo.legModel.deleteMany({ tripId: id });
 
-    this.validateData(legs);
-
     const createdLegs = await this.mongo.legModel.create(
-      legs.map((leg) => {
+      legs.map(async (leg) => {
         let res: any = {
           tripId: id,
           aircraftId: leg.aircraftId,
