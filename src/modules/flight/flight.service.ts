@@ -20,10 +20,11 @@ export class FlightService {
     private mongo: MongoService
   ) { }
 
-  validateData(legs: LegData[]) {
+  async validateData(legs: LegData[]) {
     let prevEndDate = null;
     let prevDestination = null;
 
+    // validate trip legs
     for (const leg of legs) {
       if (leg.endDate <= leg.startDate)
         throw Error("endDate must be larger than startDate.");
@@ -41,6 +42,34 @@ export class FlightService {
       prevDestination = leg.destinationId;
       prevEndDate = leg.endDate;
     }
+
+    let firstLeg = legs[0];
+    let lastLeg = legs[legs.length - 1];
+
+    // validate legs across trips
+    const beforeLeg = (await this.mongo.legModel.find({
+      aircraftId: firstLeg.aircraftId,
+      endDate: { $lte: firstLeg.startDate }
+    }, null, {
+      limit: 1,
+      sort: { endDate: -1 }
+    }))[0];
+    // console.log("🚀 ~ FlightService ~ validateData ~ beforeLeg", beforeLeg)
+
+    const afterLeg = (await this.mongo.legModel.find({
+      aircraftId: lastLeg.aircraftId,
+      startDate: { $gte: lastLeg.endDate }
+    }, null, {
+      limit: 1,
+      sort: { endDate: 1 }
+    }))[0];
+    // console.log("🚀 ~ FlightService ~ validateData ~ afterLeg", afterLeg)
+
+    if (beforeLeg && (beforeLeg.destinationId._id != firstLeg.departureId))
+      throw Error(`first leg departureId cannot be ${firstLeg.departureId}`);
+
+    if (afterLeg && (afterLeg.departureId._id != lastLeg.destinationId))
+      throw Error(`last leg destinationId cannot be ${lastLeg.destinationId}`);
   }
 
   async validateFk(model: any, id: string) {
@@ -52,7 +81,7 @@ export class FlightService {
   async createTrip({ data }: CreateTripInput) {
     const { legs } = data;
 
-    this.validateData(legs);
+    await this.validateData(legs);
     for (const leg of legs) {
       await this.validateFk(this.mongo.aircraftModel, leg.aircraftId);
       await this.validateFk(this.mongo.locationModel, leg.departureId);
@@ -89,7 +118,6 @@ export class FlightService {
       tripId: where.id
     }).populate(["departureId", "destinationId", "aircraftId"]);
 
-
     const result: TripModel = {
       _id: foundedTrip.id,
       tripNo: foundedTrip.tripNo,
@@ -117,7 +145,7 @@ export class FlightService {
   async updateTrip({ data, id }: UpdateTripInput) {
     const { legs } = data;
 
-    this.validateData(legs);
+    await this.validateData(legs);
     for (const leg of legs) {
       await this.validateFk(this.mongo.aircraftModel, leg.aircraftId);
       await this.validateFk(this.mongo.locationModel, leg.departureId);
