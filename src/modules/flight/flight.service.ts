@@ -20,56 +20,56 @@ export class FlightService {
     private mongo: MongoService
   ) { }
 
+  // validating trip legs
   async validateData(legs: LegData[]) {
-    let prevEndDate = null;
-    let prevDestination = null;
+    for (let i = 0; i < legs.length; i++) {
+      // console.log(`---------------------validating leg[${i}]---------------------------`)
+      const prevLeg: LegData = legs[i - 1];
+      const nextLeg: LegData = legs[i + 1];
 
-    // validate trip legs
-    for (const leg of legs) {
-      if (leg.endDate <= leg.startDate)
+      if (legs[i].endDate <= legs[i].startDate)
         throw Error("endDate must be larger than startDate.");
 
-      if (prevEndDate && (leg.startDate <= prevEndDate))
+      if (prevLeg && (legs[i].startDate <= prevLeg.endDate))
         throw Error("startDate must be larger than previous endDate.");
 
-      if (prevDestination && (leg.departureId != prevDestination))
-        throw Error("departure must be same as last leg destination.");
-
-      if (leg.departureId == leg.destinationId)
+      if (legs[i].departureId == legs[i].destinationId)
         throw Error("departure and destination cannot be same.");
 
+      // validate legs across trips
+      let beforeLeg: any = (await this.mongo.legModel.find({
+        aircraftId: legs[i].aircraftId,
+        endDate: { $lte: legs[i].startDate }
+      }, null, {
+        limit: 1,
+        sort: { endDate: -1 }
+      }))[0];
 
-      prevDestination = leg.destinationId;
-      prevEndDate = leg.endDate;
+      if (prevLeg && (new Date(prevLeg.endDate) > beforeLeg.endDate))
+        beforeLeg = prevLeg;
+      // console.log("🚀 ~ FlightService ~ validateData ~ beforeLeg", beforeLeg)
+
+      let afterLeg: any = (await this.mongo.legModel.find({
+        aircraftId: legs[i].aircraftId,
+        startDate: { $gte: legs[i].endDate }
+      }, null, {
+        limit: 1,
+        sort: { endDate: 1 }
+      }))[0];
+
+      // console.log(`${new Date(nextLeg.startDate)} < ${afterLeg.startDate} => ${new Date(nextLeg.startDate) < afterLeg.startDate}`)
+      if (nextLeg && (new Date(nextLeg.startDate) < afterLeg.startDate))
+        afterLeg = nextLeg;
+      // console.log("🚀 ~ FlightService ~ validateData ~ afterLeg", afterLeg)
+
+      // console.log("before check:", beforeLeg && beforeLeg.destinationId, legs[i].departureId)
+      if (beforeLeg && (beforeLeg.destinationId != legs[i].departureId))
+        throw Error(`leg departureId cannot be ${legs[i].departureId}`);
+
+      // console.log("after check:", afterLeg && afterLeg.departureId, legs[i].destinationId)
+      if (afterLeg && (afterLeg.departureId != legs[i].destinationId))
+        throw Error(`leg destinationId cannot be ${legs[i].destinationId}`);
     }
-
-    let firstLeg = legs[0];
-    let lastLeg = legs[legs.length - 1];
-
-    // validate legs across trips
-    const beforeLeg = (await this.mongo.legModel.find({
-      aircraftId: firstLeg.aircraftId,
-      endDate: { $lte: firstLeg.startDate }
-    }, null, {
-      limit: 1,
-      sort: { endDate: -1 }
-    }))[0];
-    // console.log("🚀 ~ FlightService ~ validateData ~ beforeLeg", beforeLeg)
-
-    const afterLeg = (await this.mongo.legModel.find({
-      aircraftId: lastLeg.aircraftId,
-      startDate: { $gte: lastLeg.endDate }
-    }, null, {
-      limit: 1,
-      sort: { endDate: 1 }
-    }))[0];
-    // console.log("🚀 ~ FlightService ~ validateData ~ afterLeg", afterLeg)
-
-    if (beforeLeg && (beforeLeg.destinationId._id != firstLeg.departureId))
-      throw Error(`first leg departureId cannot be ${firstLeg.departureId}`);
-
-    if (afterLeg && (afterLeg.departureId._id != lastLeg.destinationId))
-      throw Error(`last leg destinationId cannot be ${lastLeg.destinationId}`);
   }
 
   async validateFk(model: any, id: string) {
