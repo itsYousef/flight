@@ -23,7 +23,6 @@ export class FlightService {
   // validating trip legs
   async validateData(legs: LegData[]) {
     for (let i = 0; i < legs.length; i++) {
-      // console.log(`---------------------validating leg[${i}]---------------------------`)
       const prevLeg: LegData = legs[i - 1];
       const nextLeg: LegData = legs[i + 1];
 
@@ -39,15 +38,25 @@ export class FlightService {
       // validate legs across trips
       let beforeLeg: any = (await this.mongo.legModel.find({
         aircraftId: legs[i].aircraftId,
-        endDate: { $lte: legs[i].startDate }
+        $or: [
+          { endDate: { $lte: legs[i].endDate } },
+          { startDate: { $lte: legs[i].endDate } }
+        ]
       }, null, {
         limit: 1,
         sort: { endDate: -1 }
       }))[0];
 
-      if (prevLeg && (new Date(prevLeg.endDate) > beforeLeg.endDate))
-        beforeLeg = prevLeg;
-      // console.log("🚀 ~ FlightService ~ validateData ~ beforeLeg", beforeLeg)
+      if (beforeLeg) {
+        if (prevLeg && (new Date(prevLeg.endDate) > beforeLeg.endDate))
+          beforeLeg = prevLeg;
+
+        // conflict in period check
+        if (
+          new Date(beforeLeg.endDate) >= new Date(legs[i].startDate) &&
+          new Date(legs[i].endDate) >= new Date(beforeLeg.startDate))
+          throw Error(`leg[${i}] has time conflict with leg.id = ${beforeLeg._id}`);
+      }
 
       let afterLeg: any = (await this.mongo.legModel.find({
         aircraftId: legs[i].aircraftId,
@@ -57,16 +66,12 @@ export class FlightService {
         sort: { endDate: 1 }
       }))[0];
 
-      // console.log(`${new Date(nextLeg.startDate)} < ${afterLeg.startDate} => ${new Date(nextLeg.startDate) < afterLeg.startDate}`)
-      if (nextLeg && (new Date(nextLeg.startDate) < afterLeg.startDate))
+      if (nextLeg && afterLeg && (new Date(nextLeg.startDate) < afterLeg.startDate))
         afterLeg = nextLeg;
-      // console.log("🚀 ~ FlightService ~ validateData ~ afterLeg", afterLeg)
 
-      // console.log("before check:", beforeLeg && beforeLeg.destinationId, legs[i].departureId)
       if (beforeLeg && (beforeLeg.destinationId != legs[i].departureId))
         throw Error(`leg departureId cannot be ${legs[i].departureId}`);
 
-      // console.log("after check:", afterLeg && afterLeg.departureId, legs[i].destinationId)
       if (afterLeg && (afterLeg.departureId != legs[i].destinationId))
         throw Error(`leg destinationId cannot be ${legs[i].destinationId}`);
     }
