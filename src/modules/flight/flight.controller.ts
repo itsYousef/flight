@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateTripInput } from './dto/create-trip.input';
 import { DeleteTripInput } from './dto/delete-trip.input';
@@ -14,12 +14,14 @@ export class FlightController {
     private flightService: FlightService
   ) { }
 
+  private readonly logger = new Logger(FlightController.name)
+
   @Post("createTrip")
   @ApiOperation({ operationId: "createTrip" })
   @ApiBody({ type: CreateTripInput })
   @ApiResponse({ status: 200, type: TripModel })
   createTrip(@Body() input: CreateTripInput) {
-    console.log("CreateTrip API...");
+    this.logger.log("CreateTrip API...");
     return this.flightService.createTrip(input);
   }
 
@@ -28,7 +30,7 @@ export class FlightController {
   @ApiBody({ type: ReadTripInput })
   @ApiResponse({ status: 200, type: ReadTripOutput })
   readTrip(@Body() input: ReadTripInput) {
-    console.log("ReadTrip API...");
+    this.logger.log("ReadTrip API...");
     return this.flightService.readTrip(input);
   }
 
@@ -37,7 +39,7 @@ export class FlightController {
   @ApiBody({ type: UpdateTripInput })
   @ApiResponse({ status: 200, type: TripModel })
   updateTrip(@Body() input: UpdateTripInput) {
-    console.log("UpdateTrip API...");
+    this.logger.log("UpdateTrip API...");
     return this.flightService.updateTrip(input);
   }
 
@@ -46,7 +48,7 @@ export class FlightController {
   @ApiBody({ type: DeleteTripInput })
   @ApiResponse({ status: 200, type: TripModel })
   deleteTrip(@Body() input: DeleteTripInput) {
-    console.log("DeleteTrip API...");
+    this.logger.log("DeleteTrip API...");
     return this.flightService.deleteTrip(input);
   }
 }
