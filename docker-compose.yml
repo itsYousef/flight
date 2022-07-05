@@ -1,37 +1,35 @@
-version: '3.8'
-
 services:
-  dev:
-    container_name: flight
-    image: flight-dev:1.0.0
+  main:
+    container_name: main
+    image: flight-dev
     build:
       context: .
       target: development
-      dockerfile: ./Dockerfile
-    command: npm run start:debug
+      # dockerfile: ./Dockerfile
+    command: npm run start:dev
     ports:
-      - 3000:3000
-      - 9229:9229
+      - 8000:9000
     networks:
-      - nestjs-networks
+      - flight-network
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     restart: unless-stopped
-  prod:
-    container_name: flight_prod
-    image: flight-prod:1.0.0
-    build:
-      context: .
-      target: production
-      dockerfile: ./Dockerfile
-    command: npm run start:prod
-    ports:
-      - 3000:3000
-      - 9229:9229
+    depends_on:
+      - mongo
+
+  mongo:
+    container_name: mongo
+    image: mongo
     networks:
-      - nestjs-networks
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    restart: unless-stopped
+      - flight-network
+    restart: always
+    # volumes:
+    # - mongo-data:/var/lib/postgresql/data
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: root
+    #   MONGO_INITDB_ROOT_PASSWORD: 123456
+volumes:
+  mongo-data:
+networks:
+  flight-network:
